@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--- github.com/EternalBytes --->
 <head>
     <meta charset="UTF-8">
     <script src="wasm_exec.js"></script>
@@ -44,6 +45,7 @@
         WebAssembly.instantiateStreaming(fetch("mywasm.wasm"), go.importObject).then((result) => {
             mod = result.module;
             inst = result.instance;
+            console.log("This code was written by @EternalBytes github.com/EternalBytes");
         }).catch((err) => {
             console.error(err);
         });
