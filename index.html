@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="wasm_exec.js"></script>
+    <title>WASM Example</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        img {
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        .loading {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(100, 100, 100, 0.5);
+            backdrop-filter: blur(2px);
+
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const go = new Go();
+        let inst, mod;
+        WebAssembly.instantiateStreaming(fetch("mywasm.wasm"), go.importObject).then((result) => {
+            mod = result.module;
+            inst = result.instance;
+        }).catch((err) => {
+            console.error(err);
+        });
+    </script>
+    <div class="container">
+        <input type="file" accept=".jpg, .jpeg" name="file" id="file">
+        <br />
+        <img alt="teste" id="imagem">
+    </div>
+    <div class="loading">
+        <h2>Loading....</h2>
+    </div>
+
+    <script>
+        let imagem = document.getElementById("imagem");
+        let file = document.getElementById("file");
+        let loadingStyle = document.querySelector(".loading").style;
+
+        imagem.style.display = "none";
+
+        file.onchange = async (e) => {
+            
+            inst = await WebAssembly.instantiate(mod, go.importObject);
+            go.run(inst);
+            if(e.target.files[0]){
+                loadingStyle.display = "flex";
+            }
+            let read = new FileReader();
+            read.readAsDataURL(new Blob([file.files[0]], { type: 'image/jpg' }));
+            read.onloadend = ()=> {
+                if(file.files[0]){
+                    let res = window.Transform(read.result);
+                    imagem.src = "data:image/jpeg;base64,"+res;
+                    imagem.style.display = "flex";
+                    loadingStyle.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
